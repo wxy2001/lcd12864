@@ -1,0 +1,58 @@
+<html>
+<body>
+<pre>
+<h1>礦ision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: μVision V5.24.2.86
+Copyright (C) 2017 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: 1 1, 1, LIC=RJ545-GKK0K-42VLV-PAHZW-0KQD4-9DBSS
+ 
+Tool Versions:
+Toolchain:       DK51 Developers Kit  Version: 9.57.0.0
+Toolchain Path:  C:\Keil_v5\C51\BIN
+C Compiler:      C51.exe V9.57.0.0
+Assembler:       A51.exe V8.2.7.0
+Linker/Locator:  BL51.exe V6.22.2.0
+Library Manager: LIB51.exe V4.30.1.0
+Hex Converter:   OH51.exe V2.7.0.0
+CPU DLL:         S8051.DLL V3.113.0.0
+Dialog DLL:      DP51.DLL V2.64.0.0 
+<h2>Project:</h2>
+E:\嵌入式实习\-C-OS-II-master -公测\-C-OS-II-master - 副本 - 副本\-C-OS-II-tui-1.0\uCosii_51.uvproj
+Project File Date:  06/04/2022
+
+<h2>Output:</h2>
+Build target 'uCOS_II_51'
+compiling main.c...
+Source\main.c(60): warning C294: unreachable code
+Source\main.c(74): warning C294: unreachable code
+Source\main.c(88): warning C294: unreachable code
+compiling interface.c...
+linking...
+*** WARNING L13: RECURSIVE CALL TO SEGMENT
+    SEGMENT: ?PR?KEYDRIVER?KEYBOARD
+    CALLER:  ?PR?GAMEINTERFACE?INTERFACE
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?STETIME?KEYACTION
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?PRINTF?PRINTF
+    CALLER1: ?C_C51STARTUP
+    CALLER2: ?PR?TIMERCOUNTER_2?TIMEN
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_LCD12864SHOWSTRING?LCD12864
+    CALLER1: ?C_C51STARTUP
+    CALLER2: ?PR?TIMERCOUNTER_2?TIMEN
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  _?SERIAL
+    MODULE:  .\OutPut\OS_CPU_A.obj (OS_CPU_A)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  _?SERIAL
+    MODULE:  .\OutPut\OS_CPU_A.obj (OS_CPU_A)
+    ADDRESS: 2BC4H
+Program Size: data=117.2 xdata=756 code=12445
+creating hex file from ".\OutPut\uCOS-II"...
+".\OutPut\uCOS-II" - 0 Error(s), 9 Warning(s).
+Build Time Elapsed:  00:00:02
+</pre>
+</body>
+</html>

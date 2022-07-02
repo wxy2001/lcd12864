@@ -1,0 +1,127 @@
+C51 COMPILER V9.57.0.0   MAIN                                                              07/02/2022 17:38:09 PAGE 1   
+
+
+C51 COMPILER V9.57.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\OutPut\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Source\main.c LARGE OPTIMIZE(8,SIZE) BROWSE DEBUG OBJECTEXTEND PRINT(.\O
+                    -utPut\main.lst) TABS(2) OBJECT(.\OutPut\main.obj)
+
+line level    source
+
+   1          #include "includes.h"
+   2          
+   3          typedef unsigned char uChar8;
+   4          
+   5          /**************************************定义全局变量*******************************************************
+             -*************/  
+   6          sbit LED = P5^5;                                //运行灯
+   7          OS_STK gameTaskStk[MaxStkSize+1];               //定义自己的任务堆栈
+   8          OS_STK LEDTaskStk[MaxStkSize+1];                //定义自己的任务堆栈
+   9          OS_STK LCD12864TaskStk[MaxStkSize+1];           //定义自己的任务堆栈
+  10          uChar8 isStudentInterface = 0;                  //标志位，为1表示执行，非1表示不执行LCD任务
+  11          
+  12          /**************************************定义外部函数接口***************************************************
+             -**************/ 
+  13          extern void IO_init(void);                      //IAP15端口初始化
+  14          extern void initLCD12864(void);                 //LCD12864初始化
+  15          extern void keyDriver(void);                    //按键驱动
+  16          extern void configureTimer0(void) reentrant;    //系统时钟time0初始化
+  17          extern void configureTimer1(uChar8 ms);         //定时器1初始化
+  18          extern void configureTimer2(void);              //定时器2初始化
+  19          extern void startInterface(void);               //开始界面
+  20          extern void studentInterface(void);             //开始界面
+  21          extern void gameInterface(void);
+  22          
+  23          /**************************************定义用户任务*******************************************************
+             -****************/ 
+  24          void LEDTask(void *ppdata) reentrant;           //LED状态控制任务
+  25          void LCD12864Task(void *ppdata) reentrant;      //LCD控制任务
+  26          void gameTask(void *ppdata) reentrant;          //游戏任务
+  27          
+  28          /**************************************主函数*************************************************************
+             -*********/  
+  29          void main(void)
+  30          {
+  31   1        IO_init();                                  //IAP15端口初始化
+  32   1        initLCD12864();                             //LCD12864初始化
+  33   1        configureTimer1(1);                         //定时器1初始化
+  34   1        configureTimer2();                          //定时器2初始化
+  35   1        EA  = 1;                                    //允许所有中断开启
+  36   1        
+  37   1        OSInit();                                   //ucosii系统初始化
+  38   1        configureTimer0();                          //系统时钟time0       
+  39   1      
+  40   1        OSTaskCreate(LEDTask, (void*)0, &LEDTaskStk[0], 1);
+  41   1        OSTaskCreate(LCD12864Task, (void*)0, &LCD12864TaskStk[0], 2);
+  42   1        OSTaskCreate(gameTask, (void*)0, &gameTaskStk[0], 3);
+  43   1        
+  44   1        OSStart();                                  //开始任务调度
+  45   1      }
+  46          
+  47          
+  48          
+  49          
+  50          void LEDTask(void *ppdata) reentrant
+C51 COMPILER V9.57.0.0   MAIN                                                              07/02/2022 17:38:09 PAGE 2   
+
+  51          {
+  52   1        ppdata = ppdata;                            //防止编译出错
+  53   1        ET0 = 1;                                    //根任务开时钟节拍中断
+  54   1        
+  55   1        while(1)
+  56   1          {
+  57   2          LED = !LED;
+  58   2              OSTimeDly(OS_TICKS_PER_SEC);            //用户任务延时1s
+  59   2          }    
+  60   1      }
+  61          
+  62          void LCD12864Task(void *ppdata) reentrant
+  63          {
+  64   1        ppdata = ppdata;                         
+  65   1        
+  66   1        while(1)
+  67   1          {
+  68   2          if(isStudentInterface == 1)             //标志位，LCD是否执行显示学生信息界面
+  69   2          {
+  70   3            studentInterface();                 //学生信息界面
+  71   3          }
+  72   2          OSTimeDly(OS_TICKS_PER_SEC);
+  73   2          }  
+  74   1      }
+  75          
+  76          void gameTask(void *ppdata) reentrant
+  77          {
+  78   1        ppdata = ppdata;                           
+  79   1        startInterface();                           //游戏开始界面
+  80   1        //gameInterface();
+  81   1        while(1)
+  82   1        {
+  83   2          
+  84   2          keyDriver();                            //按键驱动
+  85   2              OSTimeDly(OS_TICKS_PER_SEC / 10);       //用户任务延时0.1s
+  86   2        }
+  87   1      
+  88   1      }
+  89          
+  90          
+  91          
+  92          
+  93          
+  94          
+*** WARNING C294 IN LINE 60 OF Source\main.c: unreachable code
+*** WARNING C294 IN LINE 74 OF Source\main.c: unreachable code
+*** WARNING C294 IN LINE 88 OF Source\main.c: unreachable code
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    296    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =    196    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  3 WARNING(S),  0 ERROR(S)

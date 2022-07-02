@@ -1,0 +1,319 @@
+C51 COMPILER V9.57.0.0   KEYACTION                                                         06/08/2022 11:54:34 PAGE 1   
+
+
+C51 COMPILER V9.57.0.0, COMPILATION OF MODULE KEYACTION
+OBJECT MODULE PLACED IN .\OutPut\keyAction.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Source\other\keyAction.c LARGE OPTIMIZE(8,SIZE) BROWSE DEBUG OBJECTEXTEN
+                    -D PRINT(.\OutPut\keyAction.lst) TABS(2) OBJECT(.\OutPut\keyAction.obj)
+
+line level    source
+
+   1          #include <stdio.h>                   //sprintf()
+   2          #include <stdlib.h>                  //Ëæ»úÊý
+   3          #include <IAP15W4K61S4.h>
+   4          
+   5          typedef unsigned char uChar8;
+   6          
+   7          /**************************************¶¨ÒåÈ«¾Ö±äÁ¿*******************************************************
+             -****************/ 
+   8          sbit LED = P5^5; 
+   9          sbit GLED = P4^2;                     //LEDµÆ
+  10          static int ANS[5], i, j, grade = 0;  //ANS[]´æ´¢Ã¿Ò»ÂÖµÄ´ð°¸£¬grade±íÊ¾µÃ·Ö£¬i, jÎªÑ­»·±äÁ¿
+  11          static int KEY[5] = {0, 0, 0, 0, 0}; //KEY[]´æ´¢ÓÃ»§ÊäÈëµÄ´ð°¸
+  12          uChar8 sign = 0;                     //sign±íÊ¾Êý×éµÄÏÂ±ê£¬Í¨¹ýsign¼ÓÒ»»ò¼õÒ»À´ÊµÏÖ×óÓÒÒÆ¶¯
+  13          uChar8 string[20];                   //Òª´òÓ¡µ½ÆÁÄ»ÉÏµÄÐÅÏ¢£¬ÁÙÊ±È«¾Ö±äÁ¿
+  14          uChar8 interface = 0;                //Ò»¹²Èý¸ö½çÃæ, interface = 0±íÊ¾¼üÅÌÏìÓ¦¿ªÊ¼½çÃæµÄ²Ù×÷£»= 1±íÊ¾°´¼üÏ
+             -ìÓ¦ÓÎÏ·Ò³Ãæ£» = 2±íÊ¾ÏìÓ¦ÓÎÏ·½áÊø½çÃæ
+  15          uChar8 startUnderLineId = 0;         //startUnderLineId = 0 ±íÊ¾ÏÂ»®ÏßÔÚ"¿ªÊ¼"´¦£»= 1 ±íÊ¾ÏÂ»®ÏßÔÚ"ÍË³ö"´¦
+  16          uChar8 gameModel = 0 ;               //gameModel = 0 ±íÊ¾µ±Ç°´¦ÓÚ²ÂÊý×Ö£»= 1±íÊ¾²Â×ÖÄ¸
+  17          
+  18          /**************************************¶¨ÒåÍâ²¿º¯Êý½Ó¿Ú***************************************************
+             -*********************/
+  19          extern void startInterface(void);                                //¿ªÊ¼½çÃæ
+  20          extern void gameInterface(void);                                 //ÓÎÏ·½çÃæ
+  21          extern void LCD12864ShowString(uChar8 x, uChar8 y, uChar8* str); //µÚyÐÐµÚxÁÐ£¬¿ªÊ¼´òÓ¡str
+  22          extern void LCD12864EraseArea(uChar8 x, uChar8 y, uChar8 size);  //´ÓµÚyÐÐµÚxÁÐ¿ªÊ¼£¬É¾³ýsize×Ö·û
+  23          extern void LCD12864EraseAll(void);                              //²Á³ýÕû¸öÏÔÊ¾ÆÁ
+  24          extern void img_line_start1(void);                               //»­¿ªÊ¼½çÃæ"¿ªÊ¼"´¦µÄÏÂ»®Ïß
+  25          extern void img_dele_line_start1(void);                          //É¾³ý¿ªÊ¼½çÃæ"¿ªÊ¼"´¦µÄÏÂ»®Ïß
+  26          extern void img_line_start2(void);                               //»­¿ªÊ¼½çÃæ"US"´¦µÄÏÂ»®Ïß
+  27          extern void img_dele_line_start2(void);                          //É¾³ý¿ªÊ¼½çÃæ"US"´¦µÄÏÂ»®Ïß
+  28          extern void startUnderLine(uChar8 id);
+  29          extern void img_dele_underLine(void);                            //É¾³ýËùÓÐÏÂ»®Ïß
+  30          extern void display(void);                                       //µ¹¼ÆÊ±ÏÔÊ¾º¯Êý
+  31          extern uChar8 isStudentInterface;                                //ÈÎÎñLCD12864TaskÄÚÊÇ·ñÖ´ÐÐÄÇ¶Îº¯Êý£¬À´´
+             -úÌæÏµÍ³ÄÚÐÅÏ¢´«µÝ»úÖÆ
+  32          extern int time;                                                 //Ê±¼ä
+  33          
+  34          extern uChar8 judge(int x, int y, int id);
+  35          extern void update(uChar8 a, uChar8 b);
+  36          extern void fun(uChar8 key, uChar8 dirction);
+  37          extern void R_right(void);
+  38          extern void R_left(void);
+  39          extern void R_down(void);
+  40          extern void R_up(void);
+  41          extern void LCD12864WriteCommand(uChar8 command);                 
+  42          /**************************************º¯ÊýÉùÃ÷***********************************************************
+             -********************/
+  43          void KeyAction(uChar8 KeyValue);     //°´¼üÇý¶¯º¯Êý 
+  44          void up(void);                       //ÉÏÒÆ
+  45          void down(void);                     //ÏÂÒÆ
+  46          void enterGame(void);                //È·ÈÏ¼ü£º½øÈëÓÎÏ·
+  47          
+  48          void x_up(void);                     //¿ØÖÆ²¢ÏÔÊ¾
+  49          void x_down(void);
+C51 COMPILER V9.57.0.0   KEYACTION                                                         06/08/2022 11:54:34 PAGE 2   
+
+  50          
+  51          void enterCmp(void);                 //±È½ÏÓÃ»§»Ø´ðÊÇ·ñÕýÈ·
+  52          void left(void);                     //×óÒÆ
+  53          void right(void);                    //ÓÒÒÆ
+  54          void tostop(void);                    //ÔÝÍ£ÓÎÏ·
+  55          void stoptogo(void);                  //´ÓÔÝÍ£ÖÐ»Ö¸´                 
+  56          void esc(void);
+  57          void Re(void);                   //¿ìËÙÖØÐÂ¿ªÊ¼
+  58          
+  59          void steTime(void);                  //ÖØÖÃ¼ÆÊ±Æ÷
+  60            
+  61          void GLEDFLASH(void);
+  62          
+  63          uChar8 FLAG=0;                    //¿ØÖÆÔÝÍ£µÄ±êÊ¶
+  64          
+  65          void GLEDFLASH(){
+  66   1        int i;
+  67   1        i=100000;
+  68   1        GLED=!GLED;
+  69   1        while(--i);
+  70   1        GLED=!GLED;
+  71   1      }
+  72          //°´¼üÇý¶¯º¯Êý
+  73          void KeyAction(uChar8 KeyValue) 
+  74          {
+  75   1        if(interface == 0)               //¿ªÊ¼½çÃæµÄ°´¼üÇý¶¯
+  76   1        {
+  77   2          switch(KeyValue) 
+  78   2          {
+  79   3            case 0x32: up(); break;
+  80   3            case 0x38: down(); break;
+  81   3            case 0x35: enterGame(); break;
+  82   3            default: break;
+  83   3          }
+  84   2        }
+  85   1        
+  86   1        if(interface == 1)               //ÓÎÏ·½çÃæµÄ°´¼üÇý¶¯
+  87   1        {
+  88   2          
+  89   2            switch(KeyValue) 
+  90   2            {
+  91   3              case 0x31: esc(); break;                                                
+  92   3              case 0x32: x_up(); break;                                               
+  93   3              case 0x33: tostop(); break;                                               
+  94   3              case 0x34: left(); break;                                               
+  95   3              case 0x35: enterCmp(); break;                                               
+  96   3              case 0x36: right(); break;                                                
+  97   3              case 0x37: Re(); break;                                               
+  98   3              case 0x38:  x_down(); break;                                                
+  99   3              //case 0x39:  break;                                                
+ 100   3              default: break;
+ 101   3            }
+ 102   2            
+ 103   2        }
+ 104   1        
+ 105   1        if(interface == 2)               //ÏÔÊ¾Ñ§ºÅµÄ°´¼üÇý¶¯
+ 106   1        {
+ 107   2          switch(KeyValue) 
+ 108   2          {
+ 109   3            case 0x31: esc(); break;
+ 110   3            case 0x37: Re(); break;
+ 111   3            default: break;
+C51 COMPILER V9.57.0.0   KEYACTION                                                         06/08/2022 11:54:34 PAGE 3   
+
+ 112   3          }   
+ 113   2        }
+ 114   1        
+ 115   1        if(interface == 3)               //ÔÝÍ£ÓÎÏ·µÄ°´¼üÇý¶¯
+ 116   1        {
+ 117   2          switch(KeyValue) 
+ 118   2          {
+ 119   3            case 0x39: stoptogo(); break;
+ 120   3            //case 0x31: esc(); break;
+ 121   3            default: break;
+ 122   3          }   
+ 123   2        }
+ 124   1        
+ 125   1      }
+ 126          
+ 127          
+ 128          
+ 129          
+ 130          
+ 131          
+ 132          
+ 133          
+ 134          
+ 135          
+ 136          
+ 137          
+ 138          
+ 139          
+ 140          /************************************¿ªÊ¼½çÃæ°´¼ü*********************************************************
+             -********************/
+ 141          void up(void)
+ 142          {
+ 143   1        GLEDFLASH();
+ 144   1        if(startUnderLineId == 0)
+ 145   1        {
+ 146   2          startUnderLineId = 0;
+ 147   2        }
+ 148   1        else
+ 149   1        {
+ 150   2          startUnderLineId--;
+ 151   2        }
+ 152   1        
+ 153   1        startUnderLine(startUnderLineId);
+ 154   1      }
+ 155          void down(void)
+ 156          {
+ 157   1        GLEDFLASH();
+ 158   1        if(startUnderLineId == 1)
+ 159   1        {
+ 160   2          startUnderLineId = 1;
+ 161   2        }
+ 162   1        else
+ 163   1        {
+ 164   2          startUnderLineId++;
+ 165   2        }
+ 166   1      
+ 167   1        startUnderLine(startUnderLineId);
+ 168   1      }
+ 169          
+ 170          void enterGame(void)
+ 171          {
+ 172   1        GLEDFLASH();
+C51 COMPILER V9.57.0.0   KEYACTION                                                         06/08/2022 11:54:34 PAGE 4   
+
+ 173   1        if(startUnderLineId == 0)
+ 174   1        {
+ 175   2          interface = 1;    //½øÈëÓÎÏ·Ò³Ãæ
+ 176   2          gameInterface();
+ 177   2        }
+ 178   1        if(startUnderLineId == 1) //xuehao
+ 179   1        {
+ 180   2          isStudentInterface = 1;
+ 181   2          startUnderLineId = 0;
+ 182   2          interface = 2;
+ 183   2        }
+ 184   1        
+ 185   1      }
+ 186          
+ 187          /************************************ÍÆÏä×Ó°´¼ü¹¦ÄÜº¯Êý***************************************************
+             -**************************/
+ 188          
+ 189          void x_up(void)
+ 190          {
+ 191   1        GLEDFLASH();
+ 192   1        R_up();
+ 193   1      } 
+ 194          
+ 195          void x_down(void)
+ 196          {
+ 197   1        GLEDFLASH();
+ 198   1        R_down();
+ 199   1        
+ 200   1      }
+ 201          
+ 202          void left(void)
+ 203          {
+ 204   1        GLEDFLASH();
+ 205   1        R_left();
+ 206   1      }
+ 207          
+ 208          void right(void)
+ 209          {
+ 210   1        GLEDFLASH();
+ 211   1        R_right();
+ 212   1      }
+ 213          
+ 214          
+ 215          
+ 216          void stoptogo(void)
+ 217          {
+ 218   1        if(FLAG==1){
+ 219   2        interface=1;
+ 220   2        FLAG=0;
+ 221   2        IE2 = 0x04;
+ 222   2        LCD12864WriteCommand(0x38);
+ 223   2        LCD12864WriteCommand(0x0C);
+ 224   2        LCD12864WriteCommand(0x06);
+ 225   2        LCD12864EraseArea(6, 3, 8);
+ 226   2        }
+ 227   1      }
+ 228          
+ 229          
+ 230          void tostop(void)
+ 231          {
+ 232   1        uChar8 str[]="ÔÝÍ£";
+ 233   1        GLEDFLASH();
+C51 COMPILER V9.57.0.0   KEYACTION                                                         06/08/2022 11:54:34 PAGE 5   
+
+ 234   1        if(FLAG==0){
+ 235   2        interface=3;
+ 236   2        FLAG=1;
+ 237   2        IE2 = 0x00;
+ 238   2        LCD12864WriteCommand(0x38);
+ 239   2        LCD12864WriteCommand(0x0C);
+ 240   2        LCD12864WriteCommand(0x06);
+ 241   2        LCD12864EraseArea(6, 3, 8);
+ 242   2        LCD12864ShowString(6, 3, str);
+ 243   2        }
+ 244   1      
+ 245   1      }
+ 246          
+ 247          
+ 248          
+ 249          void esc(void)
+ 250          {
+ 251   1        GLEDFLASH();
+ 252   1        interface = 0;
+ 253   1        isStudentInterface = 0;     //¹Ø±ÕÈÎÎñ2
+ 254   1        IE2 = 0x00;                 //¹Ø±Õ¶¨Ê±Æ÷2
+ 255   1        LCD12864EraseAll();
+ 256   1        startInterface();
+ 257   1      }
+ 258          
+ 259          void Re(void)
+ 260          {
+ 261   1        GLEDFLASH();
+ 262   1        esc();
+ 263   1        enterGame();
+ 264   1      }
+ 265          
+ 266          
+ 267          void enterCmp(void)
+ 268          {
+ 269   1        GLEDFLASH();
+ 270   1      }
+ 271          
+ 272          
+ 273          void steTime(void)
+ 274          {
+ 275   1        IE2 |= 0x04;    //´ò¿ª¶¨Ê±Æ÷2
+ 276   1        time = 50;     //ÖØÖÃÊ±¼ä
+ 277   1        display();
+ 278   1      }
+ 279          
+ 280           
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    480    ----
+   CONSTANT SIZE    =      5    ----
+   XDATA SIZE       =     51       6
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
